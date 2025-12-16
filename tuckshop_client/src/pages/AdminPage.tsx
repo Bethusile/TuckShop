@@ -1,11 +1,14 @@
 // tuckshop_client/src/pages/AdminPage.tsx (FULL CODE - Updated for Category Edit/Modal)
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Container, Typography, Box, Paper, Divider, Modal } from '@mui/material';
+import { getAllCategories } from '../api/categoryAPI';
+import { getStockMovementHistory } from '../api/stockAPI';
 import CategoryTable from '../components/CategoryTable';
 import CategoryForm from '../components/CategoryForm';
 import StockMovementTable from '../components/StockMovementTable';
 import FeedbackAlert from '../components/FeedbackAlert';
+import SearchFilterSort from '../components/SearchFilterSort';
 import type { ICategory } from '../types/Category';
 
 const modalStyle = {
@@ -28,6 +31,31 @@ const AdminPage: React.FC = () => {
     // --- NEW STATE FOR EDITING ---
     const [categoryToEdit, setCategoryToEdit] = useState<ICategory | null>(null);
     const [openEditModal, setOpenEditModal] = useState(false);
+    
+    // Search states
+    const [categorySearchTerm, setCategorySearchTerm] = useState('');
+    const [stockSearchTerm, setStockSearchTerm] = useState('');
+    
+    // Count states
+    const [categoryCount, setCategoryCount] = useState(0);
+    const [stockMovementCount, setStockMovementCount] = useState(0);
+
+    // Fetch counts
+    useEffect(() => {
+        const fetchCounts = async () => {
+            try {
+                const [categories, movements] = await Promise.all([
+                    getAllCategories(),
+                    getStockMovementHistory()
+                ]);
+                setCategoryCount(categories.length);
+                setStockMovementCount(movements.length);
+            } catch (error) {
+                console.error('Failed to fetch counts:', error);
+            }
+        };
+        fetchCounts();
+    }, [refreshTrigger]);
 
     // Handlers for the reusable alert component
     const handleError = useCallback((message: string) => {
@@ -76,7 +104,12 @@ const AdminPage: React.FC = () => {
 
             {/* --- Category Management Section --- */}
             <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
-                <Typography variant="h6" gutterBottom>Category Management</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Category Management</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {categoryCount} {categoryCount === 1 ? 'category' : 'categories'}
+                    </Typography>
+                </Box>
                 
                 {/* Category Creation Form (Inline use of CategoryForm) */}
                 <Box sx={{ mb: 3 }}>
@@ -91,8 +124,15 @@ const AdminPage: React.FC = () => {
                 
                 <Divider sx={{ my: 2 }} />
 
+                <SearchFilterSort
+                    searchValue={categorySearchTerm}
+                    onSearchChange={setCategorySearchTerm}
+                    searchPlaceholder="Search categories..."
+                />
+
                 {/* Category List/Table */}
-                <CategoryTable 
+                <CategoryTable
+                    searchTerm={categorySearchTerm} 
                     refreshTrigger={refreshTrigger}
                     onEditClick={handleOpenEdit} // <-- Pass Edit handler
                     onError={handleError}
@@ -116,10 +156,21 @@ const AdminPage: React.FC = () => {
 
             {/* --- Stock Movement Section --- */}
             <Box component={Paper} elevation={3} sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>Stock Movement History (Sales & Adjustments)</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Stock Movement History (Sales & Adjustments)</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {stockMovementCount} {stockMovementCount === 1 ? 'record' : 'records'}
+                    </Typography>
+                </Box>
+                
+                <SearchFilterSort
+                    searchValue={stockSearchTerm}
+                    onSearchChange={setStockSearchTerm}
+                    searchPlaceholder="Search stock movements..."
+                />
                 
                 {/* Integration of the new Stock Movement Table */}
-                <StockMovementTable />
+                <StockMovementTable searchTerm={stockSearchTerm} />
             </Box>
         </Container>
     );
