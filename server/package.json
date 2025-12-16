@@ -1,17 +1,16 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "commonjs",
+  "description": "TuckShop Inventory Management Backend",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node src/index.ts",
     "dev": "ts-node-dev src/index.ts",
     "build": "tsc",
-    "migrate:make": "node --loader ts-node/esm ./node_modules/knex/bin/cli.js migrate:make --knexfile knexfile.ts",
-    "migrate": "node --loader ts-node/esm ./node_modules/knex/bin/cli.js migrate:latest --knexfile knexfile.ts",
-    "seed": "node --loader ts-node/esm ./node_modules/knex/bin/cli.js seed:run --knexfile knexfile.ts"
+    "migrate:make": "knex migrate:make --knexfile knexfile.ts",
+    "migrate": "knex migrate:latest --knexfile knexfile.ts",
+    "seed": "knex seed:run --knexfile knexfile.ts"
   },
   "keywords": [],
   "author": "",
