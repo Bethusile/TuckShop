@@ -1,46 +1,31 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
     "rootDir": "src",
     "outDir": "dist",
 
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
-    "module": "commonjs",
+    // Environment Settings (Crucial for ESM in Node.js)
+    "module": "NodeNext",          // Correct for modern Express/Node.js
+    "moduleResolution": "NodeNext",// <--- ADD THIS
     "target": "es2020",
-    "types": [],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
+    
+    // Type Definitions
+    "types": ["node", "express", "pg", "cors"], // <--- ADD Express/PG/CORS types if they were missing
+    "esModuleInterop": true,       // Required for compatibility with many packages
 
     // Other Outputs
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    // "declaration": true,       // Not strictly needed for a backend app
+    // "declarationMap": true,
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
+    
+    // Style and Safety Options
     "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
     "skipLibCheck": true,
-
-    "esModuleInterop": true,
+    // Remove "verbatimModuleSyntax": true, or leave it if you prefer strictness
+    // Remove "isolatedModules": true, (unless you specifically need it for isolated builds)
   }
 }
