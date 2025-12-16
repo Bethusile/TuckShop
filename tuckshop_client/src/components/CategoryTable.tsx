@@ -13,13 +13,14 @@ const categoryColumns = [
 ];
 
 interface CategoryTableProps {
+    searchTerm?: string;
     refreshTrigger: number;
     onEditClick: (category: ICategory) => void; // <-- NEW: Handler to start editing
     onError: (message: string) => void;
     onSuccess: (message: string) => void;
 }
 
-const CategoryTable: React.FC<CategoryTableProps> = ({ refreshTrigger, onEditClick, onError, onSuccess }) => { // <-- Accept onEditClick
+const CategoryTable: React.FC<CategoryTableProps> = ({ searchTerm = '', refreshTrigger, onEditClick, onError, onSuccess }) => { // <-- Accept onEditClick
     const [categories, setCategories] = useState<ICategory[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -42,6 +43,15 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ refreshTrigger, onEditCli
     useEffect(() => {
         fetchCategories();
     }, [fetchCategories, refreshTrigger]);
+
+    // Filter categories based on search term
+    const filteredCategories = React.useMemo(() => {
+        return categories.filter(category => {
+            if (!searchTerm) return true;
+            const search = searchTerm.toLowerCase();
+            return category.name.toLowerCase().includes(search);
+        });
+    }, [categories, searchTerm]);
 
     // --- CRUD Handlers ---
     
@@ -84,7 +94,7 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ refreshTrigger, onEditCli
     };
 
     // Prepare data for the generic table, ensuring 'id' field is present
-    const tableData = categories.map(c => ({ 
+    const tableData = filteredCategories.map(c => ({ 
         ...c, 
         id: c.categoryid 
     })) as Array<ICategory & { id: number }>;

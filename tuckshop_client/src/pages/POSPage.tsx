@@ -1,6 +1,6 @@
 // tuckshop_client/src/pages/POSPage.tsx (COMPLETE CODE with Corrected Grid Syntax and Checkout Logic)
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
     Container, Typography, Box, Grid, Paper, Divider, 
     Button, Alert, CircularProgress, Card, CardContent, IconButton 
@@ -12,6 +12,7 @@ import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
+import SearchFilterSort from '../components/SearchFilterSort';
 
 // --- TYPES FOR CART ---
 interface ICartItem {
@@ -71,6 +72,11 @@ const POSPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [cart, setCart] = useState<ICartItem[]>([]);
+    
+    // Search, Filter, Sort state
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterCategory, setFilterCategory] = useState('');
+    const [sortBy, setSortBy] = useState('name-asc');
     
     // --- Data Fetching ---
     const fetchProducts = useCallback(async () => {
@@ -202,6 +208,64 @@ const POSPage: React.FC = () => {
     // --- Calculations ---
     const cartTotal = cart.reduce((sum, item) => sum + item.total, 0);
 
+    // --- Filter and Sort Products ---
+    const filteredAndSortedProducts = useMemo(() => {
+        let filtered = products;
+
+        // Search
+        if (searchTerm) {
+            filtered = filtered.filter(p => 
+                p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+        }
+
+        // Filter by category
+        if (filterCategory) {
+            filtered = filtered.filter(p => p.category_name === filterCategory);
+        }
+
+        // Sort
+        const sorted = [...filtered];
+        switch (sortBy) {
+            case 'name-asc':
+                sorted.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'name-desc':
+                sorted.sort((a, b) => b.name.localeCompare(a.name));
+                break;
+            case 'price-asc':
+                sorted.sort((a, b) => a.price - b.price);
+                break;
+            case 'price-desc':
+                sorted.sort((a, b) => b.price - a.price);
+                break;
+            case 'stock-asc':
+                sorted.sort((a, b) => a.stocklevel - b.stocklevel);
+                break;
+            case 'stock-desc':
+                sorted.sort((a, b) => b.stocklevel - a.stocklevel);
+                break;
+        }
+
+        return sorted;
+    }, [products, searchTerm, filterCategory, sortBy]);
+
+    // Get unique categories for filter
+    const categories = useMemo(() => {
+        const uniqueCategories = Array.from(new Set(products.map(p => p.category_name).filter((cat): cat is string => Boolean(cat))));
+        return uniqueCategories.map(cat => ({ value: cat, label: cat }));
+    }, [products]);
+
+    const sortOptions = [
+        { value: 'name-asc', label: 'Name (A-Z)' },
+        { value: 'name-desc', label: 'Name (Z-A)' },
+        { value: 'price-asc', label: 'Price (Low-High)' },
+        { value: 'price-desc', label: 'Price (High-Low)' },
+        { value: 'stock-asc', label: 'Stock (Low-High)' },
+        { value: 'stock-desc', label: 'Stock (High-Low)' },
+    ];
+
 
     return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -211,12 +275,31 @@ const POSPage: React.FC = () => {
             
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
+            <SearchFilterSort
+                searchValue={searchTerm}
+                onSearchChange={setSearchTerm}
+                searchPlaceholder="Search products..."
+                filterValue={filterCategory}
+                onFilterChange={setFilterCategory}
+                filterLabel="Category"
+                filterOptions={categories}
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                sortLabel="Sort By"
+                sortOptions={sortOptions}
+            />
+
             {/* Grid container using size={{...}} syntax */}
             <Grid container spacing={3}>
                 
                 {/* --- Left Column: Product Selector --- */}
                 <Grid size={{ xs: 12, md: 8 }}> 
-                    <Typography variant="h6" gutterBottom>Available Products</Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="h6">Available Products</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'item' : 'items'}
+                        </Typography>
+                    </Box>
                     <Paper elevation={3} sx={{ p: 2, minHeight: 600 }}>
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
@@ -224,9 +307,11 @@ const POSPage: React.FC = () => {
                             </Box>
                         ) : error && products.length === 0 ? (
                             <Alert severity="warning">No products available or failed to load.</Alert>
+                        ) : filteredAndSortedProducts.length === 0 ? (
+                            <Alert severity="info">No products match your search criteria.</Alert>
                         ) : (
                             <Grid container spacing={2}>
-                                {products.map(product => (
+                                {filteredAndSortedProducts.map(product => (
                                     // Grid size={{...}} for product cards
                                     <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={product.productid}>
                                         <ProductCard product={product} onAddToCart={handleAddToCart} />
@@ -239,7 +324,12 @@ const POSPage: React.FC = () => {
                 
                 {/* --- Right Column: Shopping Cart --- */}
                 <Grid size={{ xs: 12, md: 4 }}>
-                    <Typography variant="h6" gutterBottom>Shopping Cart</Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="h6">Shopping Cart</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {cart.length} {cart.length === 1 ? 'item' : 'items'}
+                        </Typography>
+                    </Box>
                     <Paper elevation={3} sx={{ p: 2, minHeight: 600, display: 'flex', flexDirection: 'column' }}>
                         
                         {/* Cart Items List */}
