@@ -1,14 +1,17 @@
-// tuckshop_client/src/api/config.ts
-
+/// <reference types="node" />
 import axios from 'axios';
 
-// Set the base URL for your Express server
-// Ensure your Express server is running on port 5000!
+// The Netlify environment variable for the backend API URL
+// NOTE: We do not need the REACT_APP_ prefix on Netlify, 
+// but it is safe to keep it if you need consistency.
+const BASE_URL = process.env.REACT_APP_API_BASE_URL 
+    ? process.env.REACT_APP_API_BASE_URL 
+    : 'http://localhost:3001/api'; 
+
 const API = axios.create({
-    baseURL: 'http://localhost:5000',
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    baseURL: BASE_URL,
+    timeout: 10000,
+    // ... other headers
 });
 
 export default API;

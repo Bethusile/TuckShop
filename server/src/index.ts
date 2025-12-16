@@ -21,6 +21,7 @@ import { // <-- New Category Imports
     updateCategoryHandler,
     deleteCategoryHandler
 } from './handlers/categoryHandler';
+import { getMetricsHandler } from './handlers/dashboardHandler';
 
 import * as dotenv from 'dotenv'; // Import dotenv to load variables
 dotenv.config(); // Load variables at startup
@@ -28,8 +29,34 @@ dotenv.config(); // Load variables at startup
 const app = express();
 const port = process.env.SERVER_PORT || 5000;
 
+// CORS CONFIGURATION
+import { CorsOptions } from 'cors';
+// --- 1. DEFINE ALLOWED ORIGINS ---
+// NOTE: You must replace the placeholder with your actual deployed Netlify URL
+const allowedOrigins = [
+    'http://localhost:3000', // Frontend development (React default)
+    'https://<https://tuckshopapp.netlify.app', // netlify DOMAIN
+];
+
+const corsOptions: CorsOptions = {
+    origin: (origin, callback) => {
+        // If the origin is in our allowed list OR if the request has no origin (e.g., Postman/cURL/same server request), allow it.
+        // The !origin check is vital for services like Render doing health checks or local direct calls.
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'), false);
+        }
+    },
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+    optionsSuccessStatus: 204
+};
+
+
 // MIDDLEWARE
-app.use(cors());
+// --- 2. APPLY THE CONFIGURATION ---
+app.use(cors(corsOptions)); // <-- Use the configured corsOptions object
 app.use(express.json());
 
 // ======================
@@ -60,6 +87,11 @@ app.delete('/categories/:id', deleteCategoryHandler);
 // 10. CREATE a Stock Movement (POST /movements) - Records a sale, restock, or adjustment
 app.post('/movements', recordMovementHandler);
 app.get('/movements', getAllMovementsHandler);
+
+// ======================
+// DASHBOARD ROUTES
+// ======================
+app.get('/dashboard/metrics', getMetricsHandler);
 
 // START SERVER
 app.listen(port, () => {

@@ -19,7 +19,7 @@ export const fetchAllProducts = async (): Promise<Product[]> => {
     // Uses Knex Query Builder for readability and safety
     return db('product')
         .select(
-            'p.itemid',
+            'p.itemid as productid',
             'p.name',
             'p.description',
             'p.price',

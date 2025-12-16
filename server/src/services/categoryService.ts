@@ -40,7 +40,18 @@ export const updateCategory = async (categoryid: number, name: string): Promise<
 
 // 5. DELETE Category
 export const deleteCategory = async (categoryid: number): Promise<number> => {
-    // Because the foreign key on the product table is ON DELETE SET NULL, 
-    // deleting a category will automatically set the categoryid of its associated products to NULL.
+    // First, check if there are any products associated with this category
+    const productsCount = await db('product')
+        .where({ categoryid })
+        .count('itemid as count')
+        .first();
+    
+    const count = productsCount ? Number(productsCount.count) : 0;
+    
+    if (count > 0) {
+        throw new Error(`Cannot delete category. ${count} product(s) are still associated with this category.`);
+    }
+    
+    // If no products are associated, proceed with deletion
     return db('category').where({ categoryid }).del();
 };
