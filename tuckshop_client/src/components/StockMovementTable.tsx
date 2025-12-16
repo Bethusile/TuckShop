@@ -16,10 +16,11 @@ const movementColumns = [
 ];
 
 interface StockMovementTableProps {
+    searchTerm?: string;
     // We can add a refresh trigger later if manual adjustments are needed
 }
 
-const StockMovementTable: React.FC<StockMovementTableProps> = () => {
+const StockMovementTable: React.FC<StockMovementTableProps> = ({ searchTerm = '' }) => {
     const [movements, setMovements] = useState<IStockMovement[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -61,6 +62,17 @@ const StockMovementTable: React.FC<StockMovementTableProps> = () => {
         };
     });
 
+    // Filter movements based on search term
+    const filteredData = tableData.filter(movement => {
+        if (!searchTerm) return true;
+        const search = searchTerm.toLowerCase();
+        return (
+            (movement.product_name && movement.product_name.toLowerCase().includes(search)) ||
+            (movement.reason && movement.reason.toLowerCase().includes(search)) ||
+            movement.movementid.toString().includes(search)
+        );
+    });
+
 
     return (
         <Box>
@@ -73,7 +85,7 @@ const StockMovementTable: React.FC<StockMovementTableProps> = () => {
             {!loading && !error && (
                 <ResponsiveTable<IStockMovement & { id: number }>
                     columns={movementColumns}
-                    data={tableData}
+                    data={filteredData}
                     loading={false}
                     error={null}
                     idKey={'movementid'}

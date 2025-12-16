@@ -1,10 +1,12 @@
 // tuckshop_client/src/pages/InventoryPage.tsx (FULL CODE - Final CRUD)
 
-import React, { useState, useCallback } from 'react';
-import { Container, Typography, Modal, Paper } from '@mui/material';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Container, Typography, Modal, Paper, Box } from '@mui/material';
+import { getAllProducts } from '../api/productAPI';
 import ProductTable from '../components/ProductTable';
 import ProductForm from '../components/ProductForm';
 import FeedbackAlert from '../components/FeedbackAlert';
+import SearchFilterSort from '../components/SearchFilterSort';
 import type { IProduct } from '../types/Product';
 
 const style = {
@@ -25,6 +27,23 @@ const InventoryPage: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState<string>('');
     // --- NEW STATE FOR EDITING ---
     const [productToEdit, setProductToEdit] = useState<IProduct | null>(null);
+    
+    // Search state
+    const [searchTerm, setSearchTerm] = useState('');
+    const [totalProducts, setTotalProducts] = useState(0);
+
+    // Fetch total product count
+    useEffect(() => {
+        const fetchCount = async () => {
+            try {
+                const products = await getAllProducts();
+                setTotalProducts(products.length);
+            } catch (error) {
+                console.error('Failed to fetch product count:', error);
+            }
+        };
+        fetchCount();
+    }, [refreshTrigger]);
 
     // --- MODAL HANDLERS ---
 
@@ -62,9 +81,14 @@ const InventoryPage: React.FC = () => {
 
     return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
-            <Typography variant="h4" gutterBottom>
-                Product Inventory
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h4">
+                    Product Inventory
+                </Typography>
+                <Typography variant="h6" color="text.secondary">
+                    Total: {totalProducts} {totalProducts === 1 ? 'product' : 'products'}
+                </Typography>
+            </Box>
 
             <FeedbackAlert 
                 message={successMessage || null}
@@ -78,7 +102,14 @@ const InventoryPage: React.FC = () => {
                 onClose={() => setErrorMessage('')}
             />
 
+            <SearchFilterSort
+                searchValue={searchTerm}
+                onSearchChange={setSearchTerm}
+                searchPlaceholder="Search products by name or description..."
+            />
+
             <ProductTable
+                searchTerm={searchTerm}
                 refreshTrigger={refreshTrigger}
                 onAddClick={handleOpenCreate} // Use Create handler
                 onEditClick={handleOpenEdit} // <-- Pass Edit handler
