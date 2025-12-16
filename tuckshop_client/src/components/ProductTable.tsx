@@ -8,6 +8,7 @@ import { Box, Button, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
 interface ProductTableProps {
+    searchTerm?: string;
     refreshTrigger: number;
     onAddClick: () => void;
     onEditClick: (product: IProduct) => void; // <-- NEW: Handler to start editing
@@ -34,7 +35,7 @@ const productColumns = [
     },
 ];
 
-const ProductTable: React.FC<ProductTableProps> = ({ refreshTrigger, onAddClick, onEditClick, onError, onSuccess }) => { // <-- Accept onEditClick
+const ProductTable: React.FC<ProductTableProps> = ({ searchTerm = '', refreshTrigger, onAddClick, onEditClick, onError, onSuccess }) => { // <-- Accept onEditClick
     const [products, setProducts] = useState<IProduct[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -56,6 +57,19 @@ const ProductTable: React.FC<ProductTableProps> = ({ refreshTrigger, onAddClick,
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts, refreshTrigger]);
+
+    // Filter products based on search term
+    const filteredProducts = React.useMemo(() => {
+        return products.filter(product => {
+            if (!searchTerm) return true;
+            const search = searchTerm.toLowerCase();
+            return (
+                product.name.toLowerCase().includes(search) ||
+                (product.description && product.description.toLowerCase().includes(search)) ||
+                (product.category_name && product.category_name.toLowerCase().includes(search))
+            );
+        });
+    }, [products, searchTerm]);
 
     // --- UPDATED: HANDLE EDIT ---
     const handleEdit = (id: number | string) => {
@@ -87,7 +101,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ refreshTrigger, onAddClick,
         }
     };
 
-    const tableData = products.map(p => ({ 
+    const tableData = filteredProducts.map(p => ({ 
         ...p, 
         id: p.productid 
     })) as Array<IProduct & { id: number }>;
