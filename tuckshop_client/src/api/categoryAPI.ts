@@ -33,4 +33,43 @@ export const createCategory = async (newCategory: ICreateCategory): Promise<ICat
     }
 };
 
-// You would add updateCategory, deleteCategory here as needed
+/**
+ * Updates an existing category.
+ * @param id The ID of the category to update.
+ * @param updatedCategory The new category data (e.g., { name: "Drinks" }).
+ * @returns A promise resolving to the updated ICategory object.
+ */
+export const updateCategory = async (id: number, updatedCategory: ICreateCategory): Promise<ICategory> => {
+    try {
+        const response = await API.put<ICategory>(`/categories/${id}`, updatedCategory);
+        return response.data;
+    } catch (error) {
+        console.error(`Error updating category ID ${id}:`, error);
+        throw error;
+    }
+};
+
+/**
+ * Deletes a category by ID.
+ * @param id The ID of the category to delete.
+ * @returns A promise that resolves when the deletion is successful.
+ */
+export const deleteCategory = async (id: number): Promise<void> => {
+    try {
+        await API.delete(`/categories/${id}`);
+    } catch (error: any) {
+        // --- LOGIC TO PREVENT DELETE ANOMALY ---
+        const status = error.response?.status;
+        
+        // Assuming backend returns 409 Conflict or 400 Bad Request for FK violation
+        if (status === 409 || status === 400) { 
+            // This is a common pattern for constraint violation errors
+            throw new Error(
+                "Cannot delete category: Items are currently linked to it. Please reassign all items to another category first."
+            );
+        }
+        
+        console.error(`Error deleting category ID ${id}:`, error);
+        throw error; // Re-throw any other generic error
+    }
+};
