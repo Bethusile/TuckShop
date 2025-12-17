@@ -1,7 +1,7 @@
 // tuckshop_client/src/pages/AdminPage.tsx (FULL CODE - Updated for Category Edit/Modal)
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Container, Typography, Box, Paper, Divider, Modal } from '@mui/material';
+import { Container, Typography, Box, Paper, Divider, Modal, Button } from '@mui/material';
 import { getAllCategories } from '../api/categoryAPI';
 import { getStockMovementHistory } from '../api/stockAPI';
 import CategoryTable from '../components/CategoryTable';
@@ -90,6 +90,37 @@ const AdminPage: React.FC = () => {
                 Admin & Settings
             </Typography>
 
+            {/* Sticky Navigation Buttons */}
+            <Box 
+                sx={{ 
+                    position: 'sticky', 
+                    top: 64, 
+                    zIndex: 10, 
+                    backgroundColor: 'background.default',
+                    py: 2,
+                    mb: 2,
+                    display: 'flex',
+                    gap: 2,
+                    borderBottom: '1px solid',
+                    borderColor: 'divider'
+                }}
+            >
+                <Button 
+                    variant="contained" 
+                    onClick={() => document.getElementById('category-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    sx={{ minWidth: 120 }}
+                >
+                    Categories
+                </Button>
+                <Button 
+                    variant="contained" 
+                    onClick={() => document.getElementById('stock-movement-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    sx={{ minWidth: 120 }}
+                >
+                    Stock Movements
+                </Button>
+            </Box>
+
             <FeedbackAlert 
                 message={successMessage || null}
                 severity="success"
@@ -103,7 +134,7 @@ const AdminPage: React.FC = () => {
             />
 
             {/* --- Category Management Section --- */}
-            <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
+            <Box id="category-section" component={Paper} elevation={3} sx={{ p: 3, mb: 4, scrollMarginTop: 100 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h6">Category Management</Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -155,7 +186,7 @@ const AdminPage: React.FC = () => {
 
 
             {/* --- Stock Movement Section --- */}
-            <Box component={Paper} elevation={3} sx={{ p: 3 }}>
+            <Box id="stock-movement-section" component={Paper} elevation={3} sx={{ p: 3, scrollMarginTop: 100 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h6">Stock Movement History (Sales & Adjustments)</Typography>
                     <Typography variant="body2" color="text.secondary">
