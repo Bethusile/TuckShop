@@ -17,3 +17,45 @@ export const getStockMovementHistory = async (): Promise<IStockMovement[]> => {
         throw error;
     }
 };
+
+/**
+ * Updates the reason for a stock movement.
+ * @param id The movement ID
+ * @param reason The new reason text
+ */
+export const updateMovementReason = async (id: number, reason: string): Promise<void> => {
+    try {
+        await API.put(`/movements/${id}/reason`, { reason });
+    } catch (error) {
+        console.error(`Error updating movement ${id} reason:`, error);
+        throw error;
+    }
+};
+
+/**
+ * Processes a refund for a sale (reverses a SALE movement).
+ * @param movementId The sale movement ID to refund
+ * @param reason The reason for the refund
+ */
+export const processRefund = async (movementId: number, reason: string): Promise<void> => {
+    try {
+        await API.post('/sales/refund', { movementId, reason });
+    } catch (error) {
+        console.error(`Error processing refund for movement ${movementId}:`, error);
+        throw error;
+    }
+};
+
+/**
+ * Processes a return for a purchase (reverses a PURCHASE movement).
+ * @param movementId The purchase movement ID to return
+ * @param reason The reason for the return
+ */
+export const processPurchaseReturn = async (movementId: number, reason: string): Promise<void> => {
+    try {
+        await API.post('/sales/return', { movementId, reason });
+    } catch (error) {
+        console.error(`Error processing return for movement ${movementId}:`, error);
+        throw error;
+    }
+};

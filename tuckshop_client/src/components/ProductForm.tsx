@@ -87,6 +87,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialProduct, onProductSave
             setLoading(false);
             return;
         }
+        
+        if (formData.stocklevel < 0) {
+            setFormError('Stock level cannot be negative. Must be 0 or greater.');
+            setLoading(false);
+            return;
+        }
 
         try {
             let savedProduct: IProduct;
@@ -103,9 +109,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialProduct, onProductSave
             
             onProductSaved(savedProduct); // Handler for both success cases
             
-        } catch (err) {
+        } catch (err: any) {
             console.error('Product save failed:', err);
-            setFormError(`Failed to ${isEditing ? 'update' : 'create'} product. Check server logs.`);
+            const errorMessage = err.response?.data?.error || err.message || 'Unknown error';
+            setFormError(`Failed to ${isEditing ? 'update' : 'create'} product: ${errorMessage}`);
+            onError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -187,10 +195,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialProduct, onProductSave
                         value={formData.stocklevel || ''}
                         onChange={handleChange}
                         type="number"
+                        inputProps={{ min: 0 }}
                         variant="outlined"
                         size="small"
                         required
                         fullWidth
+                        helperText="Must be 0 or greater"
                     />
                 </Grid>
             </Grid>
