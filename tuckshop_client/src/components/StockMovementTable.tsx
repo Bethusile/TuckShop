@@ -8,6 +8,9 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import UndoIcon from '@mui/icons-material/Undo';
+import DownloadIcon from '@mui/icons-material/Download';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { 
     getStockMovementHistory, 
     updateMovementReason, 
@@ -35,6 +38,10 @@ const StockMovementTable: React.FC<StockMovementTableProps> = ({ searchTerm = ''
     const [movements, setMovements] = useState<IStockMovement[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    
+    // Date filter state
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
     
     // Edit dialog state
     const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -112,7 +119,10 @@ const StockMovementTable: React.FC<StockMovementTableProps> = ({ searchTerm = ''
     
     // Prepare data for the generic table
     const tableData = movements.map(m => {
-        const timestamp = new Date(m.timestamp || m.movementtimestamp).toLocaleString('en-ZA', {
+        const rawTimestamp = (m as unknown as { movementtimestamp?: string }).movementtimestamp || m.timestamp;
+        const rawQuantityChange = (m as unknown as { quantitychange?: number }).quantitychange ?? m.quantity_change;
+        
+        const timestamp = new Date(rawTimestamp).toLocaleString('en-ZA', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -124,28 +134,133 @@ const StockMovementTable: React.FC<StockMovementTableProps> = ({ searchTerm = ''
         return {
             ...m,
             timestamp,
-            quantity_change: m.quantity_change || m.quantitychange,
+            quantity_change: rawQuantityChange,
             id: m.movementid
         };
     });
 
-    // Filter movements based on search term
+    // Filter movements based on search term and date range
     const filteredData = tableData.filter(movement => {
-        if (!searchTerm) return true;
-        const search = searchTerm.toLowerCase();
-        return (
-            (movement.product_name && movement.product_name.toLowerCase().includes(search)) ||
-            (movement.reason && movement.reason.toLowerCase().includes(search)) ||
-            (movement.movementtype && movement.movementtype.toLowerCase().includes(search)) ||
-            movement.movementid.toString().includes(search)
-        );
+        // Search filter
+        if (searchTerm) {
+            const search = searchTerm.toLowerCase();
+            const matchesSearch = (
+                (movement.product_name && movement.product_name.toLowerCase().includes(search)) ||
+                (movement.reason && movement.reason.toLowerCase().includes(search)) ||
+                (movement.movementtype && movement.movementtype.toLowerCase().includes(search)) ||
+                movement.movementid.toString().includes(search)
+            );
+            if (!matchesSearch) return false;
+        }
+        
+        // Date filter
+        const rawTimestamp = (movement as unknown as { movementtimestamp?: string }).movementtimestamp || movement.timestamp;
+        const movementDate = new Date(rawTimestamp);
+        
+        if (startDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            if (movementDate < start) return false;
+        }
+        
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            if (movementDate > end) return false;
+        }
+        
+        return true;
     });
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+        
+        // Add title
+        doc.setFontSize(18);
+        doc.text('Stock Movement History', 14, 20);
+        
+        // Add date range if filtered
+        doc.setFontSize(10);
+        let yPos = 30;
+        if (startDate || endDate) {
+            const dateRange = `Date Range: ${startDate || 'Start'} to ${endDate || 'End'}`;
+            doc.text(dateRange, 14, yPos);
+            yPos += 7;
+        }
+        
+        // Prepare table data
+        const tableData = filteredData.map(m => [
+            m.movementid,
+            m.product_name,
+            m.movementtype,
+            m.quantity_change,
+            m.reason || '-',
+            m.timestamp
+        ]);
+        
+        // Generate table
+        autoTable(doc, {
+            head: [['ID', 'Product', 'Type', 'Change', 'Reason', 'Date/Time']],
+            body: tableData,
+            startY: yPos,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [63, 81, 181] }
+        });
+        
+        // Save PDF
+        const fileName = `stock-movements-${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(fileName);
+    };
+
     return (
         <Box>
+            {/* Date Filter */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                <TextField
+                    label="Start Date"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                />
+                <TextField
+                    label="End Date"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                />
+                {(startDate || endDate) && (
+                    <Button 
+                        variant="outlined" 
+                        size="small"
+                        onClick={() => {
+                            setStartDate('');
+                            setEndDate('');
+                        }}
+                    >
+                        Clear Dates
+                    </Button>
+                )}
+                <Button 
+                    variant="contained" 
+                    color="primary"
+                    size="small"
+                    startIcon={<DownloadIcon />}
+                    onClick={handleDownloadPDF}
+                    disabled={filteredData.length === 0}
+                >
+                    Download PDF
+                </Button>
+            </Box>
+            
             {loading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}><CircularProgress /></Box>}
             
             {!loading && error && (
@@ -228,11 +343,14 @@ const StockMovementTable: React.FC<StockMovementTableProps> = ({ searchTerm = ''
                             <TableBody>
                                 {filteredData.map((movement) => (
                                     <TableRow key={movement.movementid} hover>
-                                        {movementColumns.map((column) => (
-                                            <TableCell key={String(column.key)}>
-                                                {String(movement[column.key] || '-')}
-                                            </TableCell>
-                                        ))}
+                                        {movementColumns.map((column) => {
+                                            const value = movement[column.key];
+                                            return (
+                                                <TableCell key={String(column.key)}>
+                                                    {value !== undefined && value !== null ? String(value) : '-'}
+                                                </TableCell>
+                                            );
+                                        })}
                                         <TableCell>
                                             <Box sx={{ display: 'flex', gap: 1 }}>
                                                 <Button 
