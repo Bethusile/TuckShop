@@ -42,12 +42,35 @@ const cors_1 = __importDefault(require("cors"));
 const productHandler_1 = require("./handlers/productHandler");
 const stockMovementHandler_1 = require("./handlers/stockMovementHandler");
 const categoryHandler_1 = require("./handlers/categoryHandler");
+const dashboardHandler_1 = require("./handlers/dashboardHandler");
 const dotenv = __importStar(require("dotenv")); // Import dotenv to load variables
 dotenv.config(); // Load variables at startup
 const app = (0, express_1.default)();
 const port = process.env.SERVER_PORT || 5000;
+// --- 1. DEFINE ALLOWED ORIGINS ---
+// NOTE: You must replace the placeholder with your actual deployed Netlify URL
+const allowedOrigins = [
+    'http://localhost:3000', // Frontend development (React default)
+    'https://<https://tuckshopapp.netlify.app', // netlify DOMAIN
+];
+const corsOptions = {
+    origin: (origin, callback) => {
+        // If the origin is in our allowed list OR if the request has no origin (e.g., Postman/cURL/same server request), allow it.
+        // The !origin check is vital for services like Render doing health checks or local direct calls.
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'), false);
+        }
+    },
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+    optionsSuccessStatus: 204
+};
 // MIDDLEWARE
-app.use((0, cors_1.default)());
+// --- 2. APPLY THE CONFIGURATION ---
+app.use((0, cors_1.default)(corsOptions)); // <-- Use the configured corsOptions object
 app.use(express_1.default.json());
 // ======================
 // PRODUCT ROUTES (Table: Product)
@@ -71,6 +94,10 @@ app.delete('/categories/:id', categoryHandler_1.deleteCategoryHandler);
 // 10. CREATE a Stock Movement (POST /movements) - Records a sale, restock, or adjustment
 app.post('/movements', stockMovementHandler_1.recordMovementHandler);
 app.get('/movements', stockMovementHandler_1.getAllMovementsHandler);
+// ======================
+// DASHBOARD ROUTES
+// ======================
+app.get('/dashboard/metrics', dashboardHandler_1.getMetricsHandler);
 // START SERVER
 app.listen(port, () => {
     console.log(`Tuckshop TypeScript Server is running on http://localhost:${port}`);

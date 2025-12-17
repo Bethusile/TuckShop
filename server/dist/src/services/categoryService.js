@@ -37,8 +37,16 @@ const updateCategory = async (categoryid, name) => {
 exports.updateCategory = updateCategory;
 // 5. DELETE Category
 const deleteCategory = async (categoryid) => {
-    // Because the foreign key on the product table is ON DELETE SET NULL, 
-    // deleting a category will automatically set the categoryid of its associated products to NULL.
+    // First, check if there are any products associated with this category
+    const productsCount = await (0, knex_1.default)('product')
+        .where({ categoryid })
+        .count('itemid as count')
+        .first();
+    const count = productsCount ? Number(productsCount.count) : 0;
+    if (count > 0) {
+        throw new Error(`Cannot delete category. ${count} product(s) are still associated with this category.`);
+    }
+    // If no products are associated, proceed with deletion
     return (0, knex_1.default)('category').where({ categoryid }).del();
 };
 exports.deleteCategory = deleteCategory;

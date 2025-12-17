@@ -148,12 +148,18 @@ const deleteCategoryHandler = async (req, res) => {
             res.status(404).json({ error: 'Category not found.' });
         }
         else {
-            res.json({ message: 'Category deleted successfully (associated products set to NULL).' });
+            res.json({ message: 'Category deleted successfully.' });
         }
     }
     catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Failed to delete category.' });
+        // Check if it's our custom validation error
+        if (err.message && err.message.includes('Cannot delete category')) {
+            res.status(409).json({ error: err.message });
+        }
+        else {
+            res.status(500).json({ error: 'Failed to delete category.' });
+        }
     }
 };
 exports.deleteCategoryHandler = deleteCategoryHandler;

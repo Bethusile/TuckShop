@@ -1,8 +1,12 @@
 // server/src/knex.ts
 import knex from 'knex';
-import knexConfig from '../knexfile'; // Correct path to knexfile.ts
+import knexConfig from '../knexfile';
+
 
 // Export the development configuration
-const db = knex(knexConfig.development);
+
+const environment = process.env.NODE_ENV || 'development';
+
+const db = knex(knexConfig[environment]);
 
 export default db;

@@ -1,1 +1,1 @@
-{"version":3,"file":"knex.js","sourceRoot":"","sources":["../../src/knex.ts"],"names":[],"mappings":";;;;;AAAA,qBAAqB;AACrB,gDAAwB;AACxB,2DAAqC,CAAC,8BAA8B;AAEpE,uCAAuC;AACvC,MAAM,EAAE,GAAG,IAAA,cAAI,EAAC,kBAAU,CAAC,WAAW,CAAC,CAAC;AAExC,kBAAe,EAAE,CAAC"}
+{"version":3,"file":"knex.js","sourceRoot":"","sources":["../../src/knex.ts"],"names":[],"mappings":";;;;;AAAA,qBAAqB;AACrB,gDAAwB;AACxB,2DAAqC;AAGrC,uCAAuC;AAEvC,MAAM,WAAW,GAAG,OAAO,CAAC,GAAG,CAAC,QAAQ,IAAI,aAAa,CAAC;AAE1D,MAAM,EAAE,GAAG,IAAA,cAAI,EAAC,kBAAU,CAAC,WAAW,CAAC,CAAC,CAAC;AAEzC,kBAAe,EAAE,CAAC"}

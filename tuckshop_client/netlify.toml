@@ -1,0 +1,16 @@
+[build]
+  # Build command to compile TypeScript and build Vite app
+  command = "npm run build"
+  
+  # Directory to publish (Vite outputs to 'dist' by default)
+  publish = "dist"
+
+[build.environment]
+  # Use Node.js 18 or higher
+  NODE_VERSION = "18"
+
+# Redirect all routes to index.html for React Router SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

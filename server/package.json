@@ -5,13 +5,22 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node src/index.ts",
-    "dev": "ts-node-dev src/index.ts",
-    "build": "tsc",
-    "migrate:make": "knex migrate:make --knexfile knexfile.ts",
-    "migrate": "knex migrate:latest --knexfile knexfile.ts",
-    "seed": "knex seed:run --knexfile knexfile.ts"
+
+
+  "dev": "ts-node-dev src/index.ts",                  
+  "start:dev": "ts-node src/index.ts",               
+
+
+  "build": "tsc",                                    
+  "start": "node dist/index.js",                     
+  "start:prod": "cross-env NODE_ENV=production node dist/src/index.js",
+
+ 
+  "migrate:make": "knex migrate:make --knexfile knexfile.ts",
+  "migrate": "knex migrate:latest --knexfile knexfile.ts",
+  "seed": "knex seed:run --knexfile knexfile.ts"
   },
+
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -28,6 +37,7 @@
     "@types/knex": "^0.15.2",
     "@types/node": "^25.0.2",
     "@types/pg": "^8.16.0",
+    "cross-env": "^10.1.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
