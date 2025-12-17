@@ -24,6 +24,18 @@ export const recordStockMovement = async (movementData: NewStockMovement): Promi
     return db.transaction(async (trx) => {
         const { productid, movementtype, quantitychange } = movementData;
 
+        // Check current stock level before applying change
+        const product = await trx('product').where({ itemid: productid }).first();
+        
+        if (!product) {
+            throw new Error(`Product with ID ${productid} not found.`);
+        }
+        
+        const newStockLevel = product.stocklevel + quantitychange;
+        if (newStockLevel < 0) {
+            throw new Error(`Insufficient stock. Current stock: ${product.stocklevel}, Attempted change: ${quantitychange}. Stock cannot go below 0.`);
+        }
+
         // 1. Record the Movement (INSERT into stockmovements)
         const [newMovement] = await trx('stockmovements')
             .insert({
@@ -34,15 +46,9 @@ export const recordStockMovement = async (movementData: NewStockMovement): Promi
             .returning('*');
 
         // 2. Update the Product Stock Level (UPDATE product)
-        const [updatedProductCount] = await trx('product')
+        await trx('product')
             .where({ itemid: productid })
-            .increment('stocklevel', quantitychange) // Knex method for safe arithmetic
-            .returning('itemid'); // Use returning to confirm update
-
-        if (updatedProductCount === undefined) {
-             // If the product wasn't found, rollback the transaction
-            throw new Error(`Product with ID ${productid} not found.`);
-        }
+            .increment('stocklevel', quantitychange);
 
         return newMovement;
     });
@@ -51,14 +57,20 @@ export const recordStockMovement = async (movementData: NewStockMovement): Promi
 // 2. READ ALL Stock Movements
 export const fetchAllStockMovements = async (): Promise<any[]> => {
     // Join with Product table to show the product name with the movement
+    // Use stored product_name first, then fall back to current product name
     return db('stockmovements as sm')
         .select(
             'sm.movementid',
+            'sm.productid',
             'sm.movementtype',
             'sm.quantitychange',
             'sm.movementtimestamp',
-            'p.name as product_name'
+            'sm.reason',
+            db.raw(`COALESCE(sm.product_name, p.name, 'Unknown Product') as product_name`)
         )
         .leftJoin('product as p', 'sm.productid', 'p.itemid')
         .orderBy('sm.movementtimestamp', 'desc');
 };
+
+// Note: Stock movements should NOT be deleted to maintain audit trail
+// Use processRefund() or processReturn() in saleService to reverse movements

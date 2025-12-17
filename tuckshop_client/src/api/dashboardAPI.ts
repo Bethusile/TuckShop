@@ -6,6 +6,7 @@ import API from './config';
 export interface IDashboardData {
     totalRevenueToday: number;
     totalTransactionsToday: number;
+    totalReturnsToday: number;
     mostPopularItem: { 
         product_name: string; 
         quantity_sold: number; 

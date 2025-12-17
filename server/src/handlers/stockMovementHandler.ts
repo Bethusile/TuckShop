@@ -42,3 +42,6 @@ export const getAllMovementsHandler = async (req: Request, res: Response): Promi
         res.status(500).json({ error: 'Failed to retrieve stock movement history.' });
     }
 };
+
+// Note: Movement deletion removed to maintain audit trail integrity
+// Use /sales/refund or /sales/return endpoints to reverse movements
