@@ -99,12 +99,12 @@ const DashboardPage: React.FC = () => {
             
             const lowStockData = data.lowStockItems.map(item => [
                 item.name,
-                String(item.stocklevel),
-                formatCurrency(item.price)
+                String(item.stock),
+                '-'
             ]);
             
             autoTable(doc, {
-                head: [['Product', 'Stock Level', 'Price']],
+                head: [['Product', 'Stock Level']],
                 body: lowStockData,
                 startY: yPos + 5,
                 styles: { fontSize: 9 },
@@ -120,13 +120,13 @@ const DashboardPage: React.FC = () => {
             doc.text('Most Popular Item', 14, yPos);
             
             const popularData = [[
-                data.mostPopularItem.name,
+                data.mostPopularItem.product_name,
                 String(data.mostPopularItem.quantity_sold),
-                formatCurrency(data.mostPopularItem.price)
+                '-'
             ]];
             
             autoTable(doc, {
-                head: [['Product', 'Quantity Sold', 'Price']],
+                head: [['Product', 'Quantity Sold']],
                 body: popularData,
                 startY: yPos + 5,
                 styles: { fontSize: 9 },
