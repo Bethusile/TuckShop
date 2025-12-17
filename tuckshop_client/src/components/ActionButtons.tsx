@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 interface ActionButtonsProps {
   itemId: number;
   onEdit: (id: number) => void;
-  onDelete: (id: number) => void;
+  onDelete?: (id: number) => void; // Make optional
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ itemId, onEdit, onDelete }) => {
@@ -22,15 +22,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ itemId, onEdit, onDelete 
       >
         <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Edit</Box>
       </Button>
-      <Button 
-        size="small" 
-        startIcon={<DeleteIcon />} 
-        color="error" 
-        onClick={() => onDelete(itemId)}
-        sx={{ minWidth: { xs: 30, sm: 60 } }}
-      >
-        <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Delete</Box>
-      </Button>
+      {onDelete && (
+        <Button 
+          size="small" 
+          startIcon={<DeleteIcon />} 
+          color="error" 
+          onClick={() => onDelete(itemId)}
+          sx={{ minWidth: { xs: 30, sm: 60 } }}
+        >
+          <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Delete</Box>
+        </Button>
+      )}
     </Box>
   );
 };

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import ResponsiveTable from './ResponsiveTable';
-import { getAllProducts, deleteProduct } from '../api/productAPI'; // <-- Uses productAPI.ts
+import { getAllProducts } from '../api/productAPI'; // <-- Removed deleteProduct import
 import type { IProduct } from '../types/Product';
 import { Box, Button, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -72,6 +72,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ searchTerm = '', refreshTri
     }, [products, searchTerm]);
 
     // --- UPDATED: HANDLE EDIT ---
+    // --- UPDATED: HANDLE EDIT ---
     const handleEdit = (id: number | string) => {
         const productToEdit = products.find(p => p.productid === Number(id));
         if (productToEdit) {
@@ -81,25 +82,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ searchTerm = '', refreshTri
         }
     };
     
-    const handleDelete = async (id: number | string) => {
-        const productId = Number(id);
-        if (!window.confirm(`Are you sure you want to delete product ID ${productId}?`)) {
-            return;
-        }
-
-        onError('');
-        onSuccess('');
-
-        try {
-            await deleteProduct(productId);
-            setProducts(prevProducts => 
-                prevProducts.filter(p => p.productid !== productId)
-            );
-            onSuccess(`Product ID ${productId} deleted successfully.`);
-        } catch (err) {
-            onError(`Failed to delete product ID ${productId}.`);
-        }
-    };
+    // Delete removed - products should not be deleted from inventory
 
     const tableData = filteredProducts.map(p => ({ 
         ...p, 
@@ -127,8 +110,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ searchTerm = '', refreshTri
                     data={tableData}
                     loading={false}
                     error={error}
-                    onEdit={handleEdit} // Pass updated handleEdit
-                    onDelete={handleDelete}
+                    onEdit={handleEdit}
                     idKey={'productid'}
                 />
             )}

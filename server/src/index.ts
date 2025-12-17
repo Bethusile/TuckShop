@@ -11,7 +11,7 @@ import {
 
 import { 
     recordMovementHandler, 
-    getAllMovementsHandler // <-- New Imports
+    getAllMovementsHandler
 } from './handlers/stockMovementHandler';
 
 import { // <-- New Category Imports
@@ -21,6 +21,8 @@ import { // <-- New Category Imports
     updateCategoryHandler,
     deleteCategoryHandler
 } from './handlers/categoryHandler';
+import { getMetricsHandler } from './handlers/dashboardHandler';
+import { checkoutHandler, refundHandler, updateReasonHandler, returnHandler } from './handlers/saleHandler';
 
 import * as dotenv from 'dotenv'; // Import dotenv to load variables
 dotenv.config(); // Load variables at startup
@@ -60,6 +62,19 @@ app.delete('/categories/:id', deleteCategoryHandler);
 // 10. CREATE a Stock Movement (POST /movements) - Records a sale, restock, or adjustment
 app.post('/movements', recordMovementHandler);
 app.get('/movements', getAllMovementsHandler);
+
+// ======================================
+// DASHBOARD ROUTES
+// ======================================
+app.get('/dashboard/metrics', getMetricsHandler);
+
+// ======================================
+// SALES ROUTES
+// ======================================
+app.post('/sales/checkout', checkoutHandler);
+app.post('/sales/refund', refundHandler);
+app.post('/sales/return', returnHandler);
+app.put('/movements/:id/reason', updateReasonHandler);
 
 // START SERVER
 app.listen(port, () => {
