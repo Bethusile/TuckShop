@@ -7,7 +7,6 @@ import {
 } from '@mui/material';
 
 // --- NEW/VERIFIED IMPORTS ---
-import SearchFilterSort from '../components/SearchFilterSort';
 import { getDashboardMetrics } from '../api/dashboardAPI';
 import type { IDashboardData } from '../api/dashboardAPI';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -21,9 +20,6 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 // NOTE: Assuming IDashboardData is correctly imported from dashboardAPI.ts
 
 const DashboardPage: React.FC = () => {
-    // Retain existing state for search term
-    const [searchTerm, setSearchTerm] = useState('');
-    
     // New state for dashboard data
     const [data, setData] = useState<IDashboardData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -51,7 +47,12 @@ const DashboardPage: React.FC = () => {
         fetchData();
     }, [fetchData]);
 
-    const formatCurrency = (amount: number) => `R${amount.toFixed(2)}`;
+    const formatCurrency = (amount: number | undefined) => {
+        if (amount === undefined || amount === null || isNaN(amount)) {
+            return 'R0.00';
+        }
+        return `R${amount.toFixed(2)}`;
+    };
 
     // --- KPI Card Component (Inline) ---
     const KpiCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
@@ -81,15 +82,6 @@ const DashboardPage: React.FC = () => {
                 TuckShop Dashboard
             </Typography>
             
-            {/* RETAINED: SearchFilterSort Component */}
-            <Box sx={{ mb: 3 }}>
-                <SearchFilterSort
-                    searchValue={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    searchPlaceholder="Search metrics and reports..."
-                />
-            </Box>
-            
             {loading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}><CircularProgress /></Box>}
             
             {!loading && error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
@@ -118,7 +110,16 @@ const DashboardPage: React.FC = () => {
                                     color="#2196f3"
                                 />
                             </Box>
-                            {/* KPI 3: Total Inventory Value */}
+                            {/* KPI 3: Refunds Today */}
+                            <Box sx={{ flex: '1 1 240px', minWidth: 240 }}>
+                                <KpiCard
+                                    title="Refunds Today"
+                                    value={formatCurrency(data.totalReturnsToday)}
+                                    icon={<TrendingUpIcon sx={{ fontSize: 30, transform: 'rotate(180deg)' }} />}
+                                    color="#f44336"
+                                />
+                            </Box>
+                            {/* KPI 4: Total Inventory Value */}
                             <Box sx={{ flex: '1 1 240px', minWidth: 240 }}>
                                 <KpiCard
                                     title="Total Inventory Value"
@@ -127,7 +128,7 @@ const DashboardPage: React.FC = () => {
                                     color="#ff9800"
                                 />
                             </Box>
-                            {/* KPI 4: Active Categories */}
+                            {/* KPI 5: Active Categories */}
                             <Box sx={{ flex: '1 1 240px', minWidth: 240 }}>
                                 <KpiCard
                                     title="Active Categories"

@@ -28,7 +28,7 @@ interface ResponsiveTableProps<T extends { id: number | string }> {
   loading: boolean;
   error: string | null;
   onEdit: (id: number | string) => void;
-  onDelete: (id: number | string) => void;
+  onDelete?: (id: number | string) => void; // Make optional
   idKey: keyof T; // The key used for the unique ID (e.g., 'categoryid' or 'productid')
 }
 
@@ -71,7 +71,7 @@ const ResponsiveTable = <T extends { id: number | string }>({
                 <ActionButtons 
                     itemId={Number(item[idKey])} 
                     onEdit={onEdit} 
-                    onDelete={onDelete} 
+                    onDelete={onDelete}
                 />
             </Box>
           </Box>
@@ -107,7 +107,7 @@ const ResponsiveTable = <T extends { id: number | string }>({
                 <ActionButtons 
                     itemId={Number(item[idKey])} 
                     onEdit={onEdit} 
-                    onDelete={onDelete} 
+                    onDelete={onDelete}
                 />
               </TableCell>
             </TableRow>
