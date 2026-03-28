@@ -16,6 +16,8 @@ const config: { [key: string]: Knex.Config } = {
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DATABASE,
       port: process.env.PG_PORT ? parseInt(process.env.PG_PORT) : 5432,
+      connectionString: `postgresql://neondb_owner:npg_EUBct5rnvyg2@ep-lucky-morning-a8sxgdcp-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require`,
+      ssl: {rejectUnauthorized: false},  //Neon setup
     },
     pool: {
       min: 2,
