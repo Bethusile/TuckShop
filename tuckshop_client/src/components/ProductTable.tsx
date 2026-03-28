@@ -35,7 +35,7 @@ const productColumns = [
     },
 ];
 
-const ProductTable: React.FC<ProductTableProps> = ({ searchTerm = '', refreshTrigger, onAddClick, onEditClick, onError, onSuccess }) => { // <-- Accept onEditClick
+const ProductTable: React.FC<ProductTableProps> = ({ searchTerm = '', refreshTrigger, onAddClick, onEditClick, onError, onSuccess: _onSuccess }) => { // <-- Accept onEditClick
     const [products, setProducts] = useState<IProduct[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
