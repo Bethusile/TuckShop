@@ -9,15 +9,16 @@ import type { Knex } from "knex";
 const config: { [key: string]: Knex.Config } = {
   development: {
     client: "postgresql",
-    connection: {
-      // Read environment variables directly
+    connection: process.env.DATABASE_URL ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    } : {
       host: process.env.PG_HOST,
       user: process.env.PG_USER,
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DATABASE,
       port: process.env.PG_PORT ? parseInt(process.env.PG_PORT) : 5432,
-      connectionString: `postgresql://neondb_owner:npg_EUBct5rnvyg2@ep-lucky-morning-a8sxgdcp-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require`,
-      ssl: {rejectUnauthorized: false},  //Neon setup
+      ssl: { rejectUnauthorized: false },
     },
     pool: {
       min: 2,
