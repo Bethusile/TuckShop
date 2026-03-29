@@ -1,4 +1,4 @@
-"# TuckShop
+# TuckShop
 
 A modern point-of-sale (POS) and inventory management system designed for small convenience stores and tuck shops. Built with React, TypeScript, Express, and PostgreSQL.
 
@@ -34,7 +34,6 @@ A modern point-of-sale (POS) and inventory management system designed for small 
 - PostgreSQL database
 
 ## Project Structure
-
 ```
 TuckShop/
 ├── server/                    # Backend application
@@ -53,62 +52,95 @@ TuckShop/
         └── types/            # TypeScript definitions
 ```
 
-## Getting Started
+## Getting Started (Local Development)
 
 ### Prerequisites
-- Node.js (v16 or higher)
+- Node.js (v22 or higher)
 - PostgreSQL database
 - npm or yarn package manager
 
 ### Installation
 
 1. **Clone the repository**
-   ```bash
+```bash
    git clone <repository-url>
    cd TuckShop
-   ```
+```
 
 2. **Setup Backend**
-   ```bash
+```bash
    cd server
    npm install
-   ```
+```
 
    Create a `.env` file in the `server` directory:
-   ```env
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_USER=your_db_user
-   DB_PASSWORD=your_db_password
-   DB_NAME=tuckshop
-   PORT=5000
-   ```
+```env
+   PG_HOST=localhost
+   PG_USER=your_db_user
+   PG_PASSWORD=your_db_password
+   PG_DATABASE=tuckshop_db
+   PG_PORT=5432
+   SERVER_PORT=5000
+```
 
    Run migrations:
-   ```bash
+```bash
    npx knex migrate:latest
    npx knex seed:run
-   ```
+```
 
 3. **Setup Frontend**
-   ```bash
+```bash
    cd ../tuckshop_client
    npm install
-   ```
+```
 
 ### Running the Application
 
 1. **Start the backend server** (from `server` directory):
-   ```bash
+```bash
    npm run start
-   ```
+```
    Server runs on `http://localhost:5000`
 
 2. **Start the frontend** (from `tuckshop_client` directory):
-   ```bash
+```bash
    npm run dev
-   ```
+```
    Application runs on `http://localhost:5173`
+
+## Deployment
+
+This project is deployed across three free cloud services:
+
+| Service | Role | URL |
+|---------|------|-----|
+| [Neon](https://neon.tech) | PostgreSQL database | — |
+| [Render](https://render.com) | Node.js backend | — |
+| [Vercel](https://vercel.com) | React frontend | — |
+
+### 1. Database — Neon
+- Sign up at [neon.tech](https://neon.tech)
+- Create a new project and copy your connection credentials
+- Update `knexfile.ts` to include `ssl: { rejectUnauthorized: false }` in the connection object
+- Run migrations against Neon: `npx knex migrate:latest && npx knex seed:run`
+
+### 2. Backend — Render
+- Sign up at [render.com](https://render.com) and create a **Web Service**
+- Connect your GitHub repository, set root directory to `server`
+- Build command: `npm install && npm run build`
+- Start command: `node dist/src/index.js`
+- Add all `PG_*` and `SERVER_PORT` environment variables in the Render dashboard
+
+### 3. Frontend — Vercel
+- Sign up at [vercel.com](https://vercel.com) and import your GitHub repository
+- Set root directory to `tuckshop_client`
+- Add environment variable: `VITE_API_URL=https://your-render-url.onrender.com`
+
+### Important Notes
+- Never commit your `.env` file — it is listed in `.gitignore`
+- All secrets should be set as environment variables in Render and Vercel dashboards
+- The university/corporate network may block port 5432 — use a hotspot for local DB operations
 
 ## Usage Guide
 
@@ -171,5 +203,3 @@ Key tables:
 - No use of `any` type or `innerHTML`
 - Material-UI custom theme applied
 - Responsive design for mobile and desktop
-
-
